@@ -1,0 +1,6 @@
+127.0.0.1       localhost
+::1             localhost
+192.168.55.10   ansible.idm.lab ansible
+192.168.55.11   ipa1.idm.lab ipa1
+192.168.55.12   ipa2.idm.lab ipa2
+192.168.55.13   logstash.idm.lab logstash

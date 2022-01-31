@@ -1,0 +1,18 @@
+---
+- name: ansible install
+  hosts: ansible
+  remote_user: vagrant
+  become: yes
+  tasks:
+    - name: ansible repo enabled
+      rhsm_repository:
+        name: ansible-2-for-rhel-8-x86_64-rpms
+        state: enabled
+
+    - name: ansible installed
+      yum:
+        name: 
+          - ansible
+          - rhel-system-roles
+          - ansible-freeipa
+        state: latest

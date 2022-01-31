@@ -1,0 +1,14 @@
+---
+- name: subscription of system
+  hosts: all
+  remote_user: vagrant
+  become: yes
+  vars_files:
+    - subscription.yml
+  tasks:
+    - name: register
+      redhat_subscription:
+        activationkey: "{{ activationkey }}"
+        org_id: "{{ org_id }}"
+        # auto_attach: yes
+        state: present
