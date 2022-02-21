@@ -1,0 +1,51 @@
+---
+- name: Logging configured
+  hosts: ipa
+  become: true
+  vars_files:
+   - passwords.yml
+  tasks:
+    - name: logging enabled
+      ldap_attr:
+        dn: cn=config
+        name: "{{ item }}"
+        values: "on"
+        state: exact
+        server_uri: ldap://localhost/
+        bind_dn: cn=Directory Manager
+        bind_pw: "{{ ipadm_password }}"
+      loop:
+        - nsslapd-accesslog-logging-enabled
+        - nsslapd-errorlog-logging-enabled
+        - nsslapd-auditlog-logging-enabled
+        - nsslapd-auditfaillog-logging-enabled
+
+    - name: nsslapd-accesslog-level
+      ldap_attr:
+        dn: cn=config
+        name: nsslapd-accesslog-level
+        values: 256
+        state: exact
+        server_uri: ldap://localhost/
+        bind_dn: cn=Directory Manager
+        bind_pw: "{{ ipadm_password }}"
+    
+    - name: nsslapd-errorlog-level
+      ldap_attr:
+        dn: cn=config
+        name: nsslapd-errorlog-level
+        values: 16384
+        state: exact
+        server_uri: ldap://localhost/
+        bind_dn: cn=Directory Manager
+        bind_pw: "{{ ipadm_password }}" 
+
+    - name: nsslapd-allow-anonymous-access
+      ldap_attr:
+        dn: cn=config
+        name: nsslapd-allow-anonymous-access
+        values: rootdse
+        state: exact
+        server_uri: ldap://localhost/
+        bind_dn: cn=Directory Manager
+        bind_pw: "{{ ipadm_password }}" 
