@@ -1,0 +1,52 @@
+---
+- name: rsyslog installed
+  hosts: ipa,logstash
+  become: yes
+  tasks:
+    - name: rsyslog packages installed
+      yum:
+        name: 
+          - rsyslog
+        state: latest
+    - name: rsyslog started
+      service:
+        name: rsyslog
+        state: started
+        enabled: yes
+
+- name: input configured
+  hosts: logstash
+  become: yes
+  tasks:
+    - name: config created
+      copy:
+        src: imudp.conf
+        dest: /etc/rsyslog.d/imudp.conf
+      notify: restart rsyslog
+    - name: firewalld configured
+      firewalld:
+        port: 514/udp
+        state: enabled
+        permanent: yes
+        immediate: yes
+
+  handlers:
+    - name: restart rsyslog
+      service:
+        name: rsyslog
+        state: restarted
+
+- name: output configured
+  hosts: ipa
+  become: yes
+  tasks:
+    - name: config created
+      copy:
+        src: omfwd.conf
+        dest: /etc/rsyslog.d/omfwd.conf
+      notify: restart rsyslog
+  handlers:
+    - name: restart rsyslog
+      service:
+        name: rsyslog
+        state: restarted 
