@@ -1,0 +1,28 @@
+---
+- name: Unlock user
+  hosts: ipa
+  become: true
+  vars:
+    - user: admin
+  vars_files:
+   - passwords.yml
+  tasks:
+    - name: nsaccountlock
+      ldap_attr:
+        dn: uid={{ user }},cn=users,cn=accounts,dc=idm,dc=lab
+        name: nsaccountlock
+        values: "false"
+        state: exact
+        server_uri: ldap://localhost/
+        bind_dn: cn=Directory Manager
+        bind_pw: "{{ ipadm_password }}"
+
+    - name: krbLoginFailedCount
+      ldap_attr:
+        dn: uid={{ user }},cn=users,cn=accounts,dc=idm,dc=lab
+        name: krbLoginFailedCount
+        values: 0
+        state: exact
+        server_uri: ldap://localhost/
+        bind_dn: cn=Directory Manager
+        bind_pw: "{{ ipadm_password }}"
