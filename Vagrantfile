@@ -1,24 +1,32 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-NODES_NUMBER  = '3'
 NODES_HOSTNAME = ["ansible","ipa1","ipa2","logstash"]
 NODES_FQDN = ["ansible.idm.lab","ipa1.idm.lab","ipa2.idm.lab","logstash.idm.lab"]
 
 Vagrant.configure("2") do |config|
-  (0..NODES_NUMBER.to_i).each do |i|
+  config.vm.provider "libvirt" do |libvirt|
+    libvirt.qemu_use_session = false
+  end
+  (0..3).each do |i|
     config.vm.define NODES_HOSTNAME[i] do |node|
       node.vm.box = "ambalabanov/rhel"
-      node.vm.box_version = "2.0.0"
+      # node.vm.box_version = "2.0.0"
       node.vm.box_download_insecure =true
       node.vm.hostname = NODES_FQDN[i]
       node.vm.network "private_network", ip: "192.168.55.1#{i}"
+      node.vm.synced_folder ".", "/vagrant", type: "rsync"
       node.vm.provider "parallels" do |prl|
         prl.check_guest_tools = true
         prl.update_guest_tools = true
         prl.name = NODES_HOSTNAME[i]
-        prl.memory = 4096
+        prl.memory = 3072
         prl.cpus = 2
+      end
+      node.vm.provider "libvirt" do |libvirt|
+        libvirt.memory = 3072
+        libvirt.cpus = 2
+        libvirt.driver = "kvm"
       end
       node.vm.provision "hosts", type: "shell" do |shell|
         shell.privileged = true
@@ -31,9 +39,6 @@ Vagrant.configure("2") do |config|
         ansible.ask_vault_pass = true
       end
       if node.vm.hostname == "ansible.idm.lab"
-        node.vm.provider "parallels" do |prl|
-          prl.memory = 1024
-        end
         node.vm.provision "05-ansible", type: "ansible" do |ansible|
           ansible.playbook = "playbooks/05-ansible.yml"
         end
