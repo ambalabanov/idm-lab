@@ -1,4 +1,40 @@
 ---
+- name: DNS fix
+  hosts: all, !ipa1.idm.lab
+  become: yes
+  tasks:
+    - name: NetworkManager dns configured
+      copy:
+        dest: /etc/NetworkManager/NetworkManager.conf
+        content: |
+          [main]
+          dns=systemd-resolved
+      notify: restart NetworkManager
+    - name: systemd-resolved started
+      service:
+        service: systemd-resolved
+        enabled: yes
+        state: started
+    - name: systemd-resolved configured
+      copy:
+        dest: /etc/systemd/resolved.conf 
+        content: |
+          [Resolve]
+          DNS=192.168.55.11
+          Domains=idm.lab ~idm.lab ~55.168.192.in-addr.arpa
+          DNSSEC=no
+      notify: restart systemd-resolved
+
+  handlers:
+    - name: restart NetworkManager
+      service:
+        service: NetworkManager
+        state: restarted
+    - name: restart systemd-resolved
+      service:
+        service: systemd-resolved
+        state: restarted
+
 - name: Install IPA servers
   hosts: ipa1.idm.lab
   become: true
@@ -9,42 +45,24 @@
     - ipaserver_realm: IDM.LAB
     - ipaserver_setup_dns: yes
     - ipaserver_auto_forwarders: yes
-  pre_tasks:
-    - name: DNS fixed
-      replace:
-        path: /etc/resolv.conf
-        regexp: '^nameserver.*$'
-        replace: 'nameserver 192.168.55.11'
   roles:
-  - role: ipaserver
-    state: present
+    - role: ipaserver
+      state: present
 
 - name: Install IPA replicas
   hosts: ipa2.idm.lab
   become: true
   vars_files:
     - passwords.yml
-  pre_tasks:
-    - name: DNS fixed
-      replace:
-        path: /etc/resolv.conf
-        regexp: '^nameserver.*$'
-        replace: 'nameserver 192.168.55.11'
   roles:
-  - role: ipareplica
-    state: present
+    - role: ipareplica
+      state: present
 
 - name: Install IPA clients
   hosts: logstash.idm.lab, ansible.idm.lab
   become: true
   vars_files:
     - passwords.yml
-  pre_tasks:
-    - name: DNS fixed
-      replace:
-        path: /etc/resolv.conf
-        regexp: '^nameserver.*$'
-        replace: 'nameserver 192.168.55.11'
   roles:
   - role: ipaclient
     state: present
