@@ -1,6 +1,6 @@
 ---
 - name: DNS fix
-  hosts: all, !ipa1.idm.lab
+  hosts: logstash.idm.lab, ansible.idm.lab
   become: yes
   tasks:
     - name: NetworkManager dns configured
@@ -54,6 +54,10 @@
   become: true
   vars_files:
     - passwords.yml
+  vars:
+    - ipareplica_domain: idm.lab
+    - ipareplica_realm: IDM.LAB
+    - ipareplica_servers: ipa1.idm.lab
   roles:
     - role: ipareplica
       state: present
@@ -63,6 +67,10 @@
   become: true
   vars_files:
     - passwords.yml
+  vars:
+    - ipaclient_domain: idm.lab
+    - ipaclient_realm: IDM.LAB
+    - ipaclient_servers: ipa1.idm.lab
   roles:
   - role: ipaclient
     state: present

@@ -10,18 +10,25 @@ Vagrant.configure("2") do |config|
   end
   (0..3).each do |i|
     config.vm.define NODES_HOSTNAME[i] do |node|
-      node.vm.box = "ambalabanov/rhel"
-      # node.vm.box_version = "2.0.0"
       node.vm.box_download_insecure =true
       node.vm.hostname = NODES_FQDN[i]
       node.vm.network "private_network", ip: "192.168.55.1#{i}"
       node.vm.synced_folder ".", "/vagrant", type: "rsync"
-      node.vm.provider "parallels" do |prl|
-        prl.check_guest_tools = true
-        prl.update_guest_tools = true
-        prl.name = NODES_HOSTNAME[i]
-        prl.memory = 3072
-        prl.cpus = 2
+      if node.vm.hostname == "ipa1.idm.lab"
+        node.vm.box = "ambalabanov/rhel7"
+        node.vm.box_version = "1.0.0"
+      end
+      if node.vm.hostname == "ipa2.idm.lab"
+        node.vm.box = "ambalabanov/rhel7"
+        node.vm.box_version = "1.0.0"
+      end
+      if node.vm.hostname == "ansible.idm.lab"
+        node.vm.box = "ambalabanov/rhel8"
+        node.vm.box_version = "1.0.0"
+      end
+      if node.vm.hostname == "logstash.idm.lab"
+        node.vm.box = "ambalabanov/rhel8"
+        node.vm.box_version = "1.0.0"
       end
       node.vm.provider "libvirt" do |libvirt|
         libvirt.memory = 3072
